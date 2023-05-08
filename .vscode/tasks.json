@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Sketch",
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "processing-java",
+      "args": [
+        "--force",
+        "--sketch=${workspaceRoot}/Maze3",
+        "--output=${workspaceRoot}/out",
+        "--run"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+          "fileLocation": [
+              "relative",
+              "${workspaceFolder}/Maze3"
+          ],
+          "severity": "error",
+          "pattern": {
+              "regexp": "^(.*):(\\d+):(\\d+):(\\d+):(\\d+):\\s+(.*)$",
+              "file": 1,
+              "line": 2,
+              "column": 3,
+              "endLine": 4,
+              "endColumn": 5,
+              "message": 6,
+              "location": 2
+          }
+      },
+    }
+  ]
+}

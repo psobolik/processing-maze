@@ -1,0 +1,189 @@
+import mazeLib.*;
+
+static final int HOME = 36;
+
+static final int _margin = 10;
+
+static final int _rowCount = 20;
+static final int _colCount = 20;
+
+CellGrid _maze;
+Player _player;
+
+float _cellWidth;
+float _cellHeight;
+
+float _mazeWidth;
+float _mazeHeight;
+
+Direction _heading;
+
+void setup() {
+  size(1200, 1200);
+
+  _cellWidth = (width - _margin - _margin) / _colCount;
+  _cellHeight = (height - _margin - _margin) / _rowCount;
+
+  _mazeWidth = _cellWidth * _colCount;
+  _mazeHeight = _cellHeight * _rowCount;
+
+  Generator generator = new Generator();
+  _maze = generator.generateMaze(_rowCount, _colCount);
+  _heading = Direction.North;
+
+  float playerSize = min(_cellWidth, _cellHeight);
+  _player = new Player(playerSize);
+}
+
+void draw() {
+  background(128);
+  drawMaze();
+  drawPlayer();
+  // noLoop();
+}
+
+void keyPressed() {
+  if (key == CODED) {
+    switch (keyCode) {
+      case UP:
+        _player.setHeading(Direction.North);
+        if (getCell(_player.getCoordinates()).get(Direction.North) instanceof CellPassage) {
+          _player.moveForward();
+          drawPlayer();
+        }
+        break;
+      case DOWN:
+        _player.setHeading(Direction.South);
+        if (getCell(_player.getCoordinates()).get(Direction.South) instanceof CellPassage) {
+          _player.moveBackward();
+          drawPlayer();
+        }
+        break;
+      case LEFT:
+        _player.setHeading(Direction.West);
+        if (getCell(_player.getCoordinates()).get(Direction.West) instanceof CellPassage) {
+          _player.moveLeft();
+          drawPlayer();
+        }
+        break;
+      case RIGHT:
+        _player.setHeading(Direction.East);
+        if (getCell(_player.getCoordinates()).get(Direction.East) instanceof CellPassage) {
+          _player.moveRight();
+          drawPlayer();
+        }
+        break;
+      case HOME:
+        _player.setHeading(Direction.North);
+        _player.setCoordinates(0, 0);
+        drawPlayer();
+    }
+  }
+}
+
+int getPlayerRow() {
+  return _rowCount - 1 - _player.getRow();
+}
+
+int getPlayerCol() {
+  return _player.getCol();
+}
+
+void drawPlayer() {
+  float yOffset = (getPlayerRow() * _cellHeight);
+  float xOffset = (getPlayerCol() * _cellWidth);
+
+  _player.draw(xOffset + (_cellWidth / 2) - _margin, yOffset + (_cellHeight / 2) - _margin);
+}
+
+void drawEdge(float x1, float y1, float x2, float y2, color strokeColor, int strokeWeight) {
+  push();
+  strokeCap(ROUND);
+  stroke(strokeColor);
+  fill(strokeColor);
+  strokeWeight(strokeWeight);
+  line(x1, y1, x2, y2);
+  pop();
+}
+
+void drawCellWalls(int row, int col) {
+  row = _rowCount - 1 - row;
+
+  float t = _mazeHeight - ((row + 1) * _cellHeight);
+  float b = t + _cellHeight;
+  float l = col * _cellWidth;
+  float r = l + _cellWidth;
+
+  color wallColor = color(20, 55, 20);
+  Cell cell = getCell(row, col);
+
+  if (cell.get(Direction.North) instanceof CellWall) {
+    drawEdge(l, t, r, t, wallColor, 2);
+  }
+
+  if (cell.get(Direction.East) instanceof CellWall) {
+    drawEdge(r, t, r, b, wallColor, 2);
+  }
+}
+
+void drawCell(int row, int col) {
+  final int edgeStroke = color(255);
+
+  row = _rowCount - 1 - row;
+
+  float t = row * _cellHeight;
+  float b = t + _cellHeight;
+  float c = t + _cellHeight / 2;
+
+  float l = col * _cellWidth;
+  float r = l + _cellWidth;
+  float m = l + _cellWidth / 2;
+
+  drawEdge(l,c, r,c, edgeStroke, 1);
+  drawEdge(m,t, m,b, edgeStroke, 1);
+}
+
+Cell getCell(Coordinates coordinates) {
+  return _maze.get(coordinates);
+}
+
+Cell getCell(int row, int col) {
+  return getCell(new Coordinates(row, col));
+}
+
+void drawMazeCells() {
+  for (int row = 0; row < _rowCount; ++row) {
+    for (int col = 0; col < _colCount; ++col) {
+      drawCell(row, col);
+    }
+  }
+}
+
+void drawMazeWalls() {
+  for (int row = 0; row < _rowCount; ++row) {
+    for (int col = 0; col < _colCount; ++col) {
+      drawCellWalls(row, col);
+    }
+  }
+}
+
+void drawMazeBackground() {
+  noStroke();
+  fill(210);
+  rect(0, 0, _mazeWidth, _mazeHeight);
+
+  drawMazeCells();
+
+  noFill();
+  stroke(0);
+  strokeWeight(4);
+  rect(0, 0, _mazeWidth, _mazeHeight);
+}
+
+void drawMaze() {
+  push();
+  translate(_margin, _margin);
+  drawMazeBackground();
+  drawMazeWalls();
+  pop();
+}
