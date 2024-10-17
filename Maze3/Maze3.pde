@@ -22,7 +22,6 @@ private final color _mazeBackgroundColor = color(210);
 private final color _mazeBorderColor = color(0);
 private final int _mazeBorderWidth = 4;
 
-private Direction _heading;
 private PShape _goal;
 private final int _goalInset = 10;
 private final int _goalStrokeWidth = 1;
@@ -44,6 +43,8 @@ private final color _winTextColor1 = color(0, 408, 612, 85);
 private final color _winTextColor2 = color(0, 408, 612, 170);
 private final color _winTextColor3 = color(0, 408, 612);
 
+private Generator _generator = new Generator();
+
 void setup() {
   size(800, 800);
 
@@ -53,9 +54,7 @@ void setup() {
   _mazeWidth = _cellWidth * _colCount;
   _mazeHeight = _cellHeight * _rowCount;
 
-  Generator generator = new Generator();
-  _maze = generator.generateMaze(_rowCount, _colCount);
-  _heading = Direction.North;
+  _maze = _generator.generateMaze(_rowCount, _colCount);
 
   float playerSize = min(_cellWidth, _cellHeight);
   _player = new Player(playerSize, _playerStrokeColor, _playerFillColor);
@@ -63,7 +62,6 @@ void setup() {
   _goal = loadShape("star-fill.svg");
   _goal.disableStyle();
 }
-
 void draw() {
   if (_winFlag) {
     drawWinScreen();
@@ -91,14 +89,22 @@ void drawWinScreen() {
   text("You won!", center, (y * 3) / 2);
   fill(_winTextColor3);
   text("You won!", center, (y * 4) / 2);
+  textSize(24);
+  text("Press Esc to quit", center, _mazeHeight - 30);
+  text("or any other key to play a different maze.", center, _mazeHeight);
 }
 void checkForWin() {
   Coordinates playerCoordinates = _player.getCoordinates();
   _winFlag = playerCoordinates.getCol() == _colIndexMax && playerCoordinates.getRow() == _rowIndexMax;
 }
 void keyPressed() {
-  if (_winFlag) return;
-
+  if (_winFlag) {
+    _player.setCoordinates(0, 0);
+    _player.setHeading(Direction.North);
+    _winFlag = false;
+    _maze = _generator.generateMaze(_rowCount, _colCount);
+    return;
+  }
   if (key == CODED) {
     switch (keyCode) {
       case UP:
